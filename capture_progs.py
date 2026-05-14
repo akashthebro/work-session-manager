@@ -37,12 +37,12 @@ def capture_screenshot(output_path: str) -> None:
         img = sct.grab(monitor)
         mss.tools.to_png(img.rgb, img.size, output=output_path)
 
-def load_system_process_names(filename="system_processes.txt"):
+def load_system_process_names():
     """
     Loads system process names from a text file.
     Returns a set of process names.
     """
-    file_path = os.path.join(DATA_DIR, filename)
+    file_path = os.path.join(DATA_DIR, 'system_processes.txt')
 
     if not os.path.exists(file_path):
         print("system_processes.txt not found. Using empty system list.")
@@ -63,10 +63,9 @@ def load_system_process_names(filename="system_processes.txt"):
 
 def _load_capture_filter_processes():
     """Loads excluded_processes from config/capture_filters.json, if present."""
-    filters_path = os.path.join(DATA_DIR, "config", "capture_filters.json")
-    print(f'[DEBUG] capture_progs DATA_DIR: {DATA_DIR}')
-    print(f'[DEBUG] filters path: {filters_path}')
-    print(f'[DEBUG] filters path exists: {os.path.exists(filters_path)}')
+    filters_path = os.path.join(DATA_DIR, 'config', 'capture_filters.json')
+    print(f'[filter] Loading filters from: {filters_path}')
+    print(f'[filter] File exists: {os.path.exists(filters_path)}')
     if not os.path.exists(filters_path):
         print(f'[DEBUG] exclusions loaded: set()')
         return set()
@@ -82,6 +81,15 @@ def _load_capture_filter_processes():
 
 
 SYSTEM_PROCESS_NAMES = load_system_process_names() | _load_capture_filter_processes()
+
+SELF_EXCLUDE = {
+    'electron.exe',
+    'work session manager.exe',
+    'wsm.exe',
+    'api.exe',
+    'python.exe',
+    'pythonw.exe',
+}
 
 
 def classify_window(pid, process_name, hwnd):
@@ -170,6 +178,16 @@ def list_visible_windows():
                 "title": title,
                 "pid": pid,
                 "reason": "missing_executable_path"
+            })
+            return
+
+        if process_name.lower() in SELF_EXCLUDE:
+            excluded_windows.append({
+                "title": title,
+                "pid": pid,
+                "process_name": process_name,
+                "executable_path": exe_path,
+                "reason": "self_excluded",
             })
             return
 

@@ -180,10 +180,12 @@ def restore_apps_for_session(session_id, progress_callback=None):
                     progress_callback(f'Plugin restore: {process_name}')
             else:
                 launch_args = app["launch_args"]
+                exe_dir = os.path.dirname(exe_path)
+                cwd = exe_dir if os.path.isdir(exe_dir) else None
                 if launch_args:
-                    subprocess.Popen([exe_path] + launch_args.split())
+                    subprocess.Popen([exe_path] + launch_args.split(), cwd=cwd)
                 else:
-                    subprocess.Popen([exe_path])
+                    subprocess.Popen([exe_path], cwd=cwd)
 
             if progress_callback:
                 progress_callback(f'Launched {process_name} successfully')
@@ -405,10 +407,12 @@ def restore_session():
                 write_log("Plugin restore did not open application")
                 write_log("Fallback restore used")
 
+                exe_dir = os.path.dirname(exe_path)
+                cwd = exe_dir if os.path.isdir(exe_dir) else None
                 if launch_args:
-                    subprocess.Popen([exe_path] + launch_args.split())
+                    subprocess.Popen([exe_path] + launch_args.split(), cwd=cwd)
                 else:
-                    subprocess.Popen([exe_path])
+                    subprocess.Popen([exe_path], cwd=cwd)
 
             write_log(f"Application opened successfully: {exe_path} | launch_type: {launch_type}")
             write_log(f"Restoring process_name: {process_name}")
