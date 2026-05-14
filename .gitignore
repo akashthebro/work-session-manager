@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+
+# Database (contains personal session data)
+database/session_manager.db
+
+# Captures (can be large, contain personal data)
+captures/
+
+# Logs
+logs/
+
+# Config (contains personal file paths)
+config/
+
+# Electron / Node
+wsm-gui/node_modules/
+wsm-gui/dist/
+wsm-gui/.vite/
+
+# Build output
+*.exe
+*.dmg
+*.AppImage
+release/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temp files
+*.tmp
+*.log
+*.bak
+
+# Debug scripts (can be removed after development)
+add_restore_order.py

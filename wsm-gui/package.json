@@ -1,0 +1,35 @@
+{
+  "name": "wsm-gui",
+  "version": "1.0.0",
+  "main": "src/main.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "vite build && electron-builder"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "electron": "^42.0.1",
+    "electron-builder": "^26.8.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.1",
+    "concurrently": "^9.2.1",
+    "vite": "^8.0.12",
+    "wait-on": "^9.0.10"
+  },
+  "build": {
+    "appId": "com.wsm.app",
+    "productName": "Work Session Manager",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "win": {
+      "icon": "assets/icon.ico"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+ApplicationFrameHost.exe
+TextInputHost.exe
+ShellExperienceHost.exe
+SearchHost.exe
+StartMenuExperienceHost.exe
+RuntimeBroker.exe
+sihost.exe
+dwm.exe
+RtkUWP.exe
+NVIDIA Overlay.exe
+NvContainer.exe
