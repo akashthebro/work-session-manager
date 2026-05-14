@@ -5,17 +5,14 @@ __pycache__/
 *.pyd
 .Python
 *.egg-info/
-dist/
-build/
 *.egg
 
 # Virtual environments
 venv/
 .venv/
 env/
-.env
 
-# Database (contains personal session data)
+# Database
 database/session_manager.db
 
 # Captures (can be large, contain personal data)
@@ -24,7 +21,7 @@ captures/
 # Logs
 logs/
 
-# Config (contains personal file paths)
+# Config (auto-generated on first run)
 config/
 
 # Electron / Node
@@ -33,10 +30,12 @@ wsm-gui/dist/
 wsm-gui/.vite/
 
 # Build output
+dist/
+build/
+release/
 *.exe
 *.dmg
 *.AppImage
-release/
 
 # Environment files
 .env
@@ -53,11 +52,3 @@ release/
 .DS_Store
 Thumbs.db
 desktop.ini
-
-# Temp files
-*.tmp
-*.log
-*.bak
-
-# Debug scripts (can be removed after development)
-add_restore_order.py.claude/
