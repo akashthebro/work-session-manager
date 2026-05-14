@@ -4,15 +4,28 @@ import os
 import queue
 import shutil
 import sqlite3
+import sys
 import threading
 
 from flask import Flask, jsonify, request, Response, stream_with_context
 from flask_cors import CORS
 
-ROOT        = os.path.dirname(os.path.abspath(__file__))
-BASE_DIR    = ROOT
-DB_PATH     = os.path.join(ROOT, "database", "session_manager.db")
-CONFIG_DIR  = os.path.join(ROOT, "config")
+def get_app_data_dir():
+    """Returns the user data directory for WSM.
+    - In development: project root (existing behaviour)
+    - In production (PyInstaller): %APPDATA%/WorkSessionManager
+    """
+    if getattr(sys, 'frozen', False):
+        appdata = os.environ.get('APPDATA', os.path.expanduser('~'))
+        data_dir = os.path.join(appdata, 'WorkSessionManager')
+    else:
+        data_dir = os.path.dirname(os.path.abspath(__file__))
+    return data_dir
+
+ROOT       = get_app_data_dir()
+BASE_DIR   = os.path.dirname(os.path.abspath(__file__)) if not getattr(sys, 'frozen', False) else sys._MEIPASS
+DB_PATH    = os.path.join(ROOT, 'database', 'session_manager.db')
+CONFIG_DIR = os.path.join(ROOT, 'config')
 
 
 def _read_config(filename, default):
@@ -32,6 +45,57 @@ def _write_config(filename, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)
 
+
+def init_database():
+    os.makedirs(os.path.join(ROOT, 'database'), exist_ok=True)
+    os.makedirs(os.path.join(ROOT, 'captures'), exist_ok=True)
+    os.makedirs(os.path.join(ROOT, 'logs'), exist_ok=True)
+    os.makedirs(os.path.join(ROOT, 'config'), exist_ok=True)
+
+    sys_procs_dst = os.path.join(ROOT, 'system_processes.txt')
+    if not os.path.exists(sys_procs_dst):
+        if getattr(sys, 'frozen', False):
+            sys_procs_src = os.path.join(sys._MEIPASS, 'system_processes.txt')
+        else:
+            sys_procs_src = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'system_processes.txt')
+        if os.path.exists(sys_procs_src):
+            shutil.copy2(sys_procs_src, sys_procs_dst)
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sessions (
+            session_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS applications (
+            app_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id INTEGER NOT NULL,
+            executable_path TEXT,
+            window_title TEXT,
+            launch_args TEXT,
+            pos_x INTEGER,
+            pos_y INTEGER,
+            width INTEGER,
+            height INTEGER,
+            launch_type TEXT DEFAULT 'default',
+            is_minimized INTEGER DEFAULT 0,
+            is_maximized INTEGER DEFAULT 0,
+            process_name TEXT,
+            plugin_data TEXT,
+            restore_order INTEGER,
+            FOREIGN KEY (session_id) REFERENCES sessions (session_id)
+        )
+    ''')
+    conn.commit()
+    conn.close()
+    print(f'[WSM] Data directory: {ROOT}')
+    print('[WSM] Database initialized')
+
+init_database()
 
 from view_session import get_sessions
 from delete_session import delete_session

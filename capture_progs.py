@@ -1,6 +1,6 @@
-from email.mime import base
 import os
 import json
+import sys
 import time
 from datetime import datetime
 from typing import Counter
@@ -14,7 +14,14 @@ import win32con
 
 import win32process
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+def get_data_dir():
+    if getattr(sys, 'frozen', False):
+        appdata = os.environ.get('APPDATA', os.path.expanduser('~'))
+        return os.path.join(appdata, 'WorkSessionManager')
+    return os.path.dirname(os.path.abspath(__file__))
+
+DATA_DIR = get_data_dir()
 
 
 def timestamp():
@@ -35,7 +42,7 @@ def load_system_process_names(filename="system_processes.txt"):
     Loads system process names from a text file.
     Returns a set of process names.
     """
-    file_path = os.path.join(BASE_DIR, filename)
+    file_path = os.path.join(DATA_DIR, filename)
 
     if not os.path.exists(file_path):
         print("system_processes.txt not found. Using empty system list.")
@@ -56,8 +63,8 @@ def load_system_process_names(filename="system_processes.txt"):
 
 def _load_capture_filter_processes():
     """Loads excluded_processes from config/capture_filters.json, if present."""
-    filters_path = os.path.join(BASE_DIR, "config", "capture_filters.json")
-    print(f'[DEBUG] capture_progs BASE_DIR: {BASE_DIR}')
+    filters_path = os.path.join(DATA_DIR, "config", "capture_filters.json")
+    print(f'[DEBUG] capture_progs DATA_DIR: {DATA_DIR}')
     print(f'[DEBUG] filters path: {filters_path}')
     print(f'[DEBUG] filters path exists: {os.path.exists(filters_path)}')
     if not os.path.exists(filters_path):
@@ -233,7 +240,7 @@ def main():
     print("")
 
 
-    base = os.path.join(BASE_DIR, "captures", timestamp())
+    base = os.path.join(DATA_DIR, "captures", timestamp())
     ensure_dir(base)
 
     screenshot_path = os.path.join(base, "screenshot.png")

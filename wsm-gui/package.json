@@ -4,21 +4,22 @@
   "main": "src/main.js",
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "build": "vite build && electron-builder"
+    "build": "vite build && electron-builder",
+    "package": "vite build && electron-builder --win"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "electron": "^42.0.1",
-    "electron-builder": "^26.8.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^6.0.1",
     "concurrently": "^9.2.1",
+    "electron": "^42.0.1",
+    "electron-builder": "^26.8.1",
     "vite": "^8.0.12",
     "wait-on": "^9.0.10"
   },
@@ -26,10 +27,30 @@
     "appId": "com.wsm.app",
     "productName": "Work Session Manager",
     "directories": {
-      "output": "dist-electron"
+      "output": "release"
     },
+    "files": [
+      "dist/**/*",
+      "src/main.js",
+      "src/preload.js"
+    ],
+    "extraResources": [
+      {
+        "from": "../dist/api",
+        "to": "api",
+        "filter": ["**/*"]
+      }
+    ],
     "win": {
-      "icon": "assets/icon.ico"
+      "target": "nsis",
+      "icon": "../App_Icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Work Session Manager"
     }
   }
 }

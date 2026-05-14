@@ -1,8 +1,15 @@
 import os
 import sqlite3
+import sys
 
 
-DB_PATH = os.path.join("database", "session_manager.db")
+def get_data_dir():
+    if getattr(sys, 'frozen', False):
+        appdata = os.environ.get('APPDATA', os.path.expanduser('~'))
+        return os.path.join(appdata, 'WorkSessionManager')
+    return os.path.dirname(os.path.abspath(__file__))
+
+DB_PATH = os.path.join(get_data_dir(), 'database', 'session_manager.db')
 
 
 def column_exists(cursor, table_name, column_name):

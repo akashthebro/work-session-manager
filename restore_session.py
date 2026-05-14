@@ -2,6 +2,7 @@ import json
 import sqlite3
 import os
 import subprocess
+import sys
 import time
 
 import psutil
@@ -11,8 +12,15 @@ import win32process
 
 from plugin_manager import PluginManager
 
-DB_PATH = os.path.join("database", "session_manager.db")
-LOG_DIR = "logs"
+def get_data_dir():
+    if getattr(sys, 'frozen', False):
+        appdata = os.environ.get('APPDATA', os.path.expanduser('~'))
+        return os.path.join(appdata, 'WorkSessionManager')
+    return os.path.dirname(os.path.abspath(__file__))
+
+DATA_DIR = get_data_dir()
+DB_PATH  = os.path.join(DATA_DIR, 'database', 'session_manager.db')
+LOG_DIR  = os.path.join(DATA_DIR, 'logs')
 RESTORE_LOG_PATH = None
 
 

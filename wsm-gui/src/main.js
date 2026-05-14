@@ -1,9 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
+const fs = require('fs');
 
-const isDev = process.env.NODE_ENV !== 'production';
-const PYTHON_ROOT = path.join(__dirname, '..', '..');
+const isDev = !app.isPackaged;
 const DEV_SERVER = 'http://localhost:5173';
 
 let apiProcess = null;
@@ -13,11 +13,35 @@ ipcMain.on('minimize-window', () => win?.minimize());
 ipcMain.on('close-window',   () => win?.close());
 
 function startApi() {
-  apiProcess = spawn('python', [path.join(PYTHON_ROOT, 'api.py')], {
-    cwd: PYTHON_ROOT,
+  let apiPath;
+  let apiArgs;
+  let apiCwd;
+
+  if (isDev) {
+    apiPath = 'python';
+    apiArgs = [path.join(__dirname, '../../api.py')];
+    apiCwd  = path.join(__dirname, '../../');
+  } else {
+    apiPath = path.join(process.resourcesPath, 'api', 'api.exe');
+    apiArgs = [];
+    apiCwd  = path.join(process.resourcesPath, 'api');
+  }
+
+  console.log(`[WSM] Starting API: ${apiPath}`);
+
+  apiProcess = spawn(apiPath, apiArgs, {
+    cwd: apiCwd,
+    stdio: 'ignore',
+    detached: false,
   });
-  apiProcess.stdout.on('data', (d) => console.log('[api]', d.toString().trim()));
-  apiProcess.stderr.on('data', (d) => console.error('[api]', d.toString().trim()));
+
+  apiProcess.on('error', (err) => {
+    console.error('[WSM] API process error:', err);
+  });
+
+  apiProcess.on('exit', (code) => {
+    console.log(`[WSM] API process exited with code ${code}`);
+  });
 }
 
 function createWindow() {
@@ -37,14 +61,13 @@ function createWindow() {
   if (isDev) {
     win.loadURL(DEV_SERVER);
   } else {
-    win.loadFile(path.join(__dirname, '..', 'dist', 'index.html'));
+    win.loadFile(path.join(__dirname, '../dist/index.html'));
+  }
+
+  if (!app.isPackaged) {
+    win.webContents.openDevTools();
   }
 }
-
-app.whenReady().then(() => {
-  startApi();
-  createWindow();
-});
 
 function killApi() {
   if (apiProcess) {
@@ -52,6 +75,11 @@ function killApi() {
     apiProcess = null;
   }
 }
+
+app.whenReady().then(() => {
+  startApi();
+  setTimeout(createWindow, app.isPackaged ? 3000 : 0);
+});
 
 app.on('window-all-closed', () => {
   killApi();
