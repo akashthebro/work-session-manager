@@ -60,4 +60,4 @@ desktop.ini
 *.bak
 
 # Debug scripts (can be removed after development)
-add_restore_order.py
+add_restore_order.py.claude/
